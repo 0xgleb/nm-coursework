@@ -1,3 +1,21 @@
-# Midpoint rule
-# Trapezium rule
-# Simpson's rule
+\newpage
+
+* Problem specification
+
+  $$ f(x) = \frac{sin(x)}{ln(x)} $$
+
+  $$ \int_{4}^{8} f(x) dx = \int_{4}^{8} \frac{sin(x)}{ln(x)} dx $$
+
+  This integral cannot be solved analytically. On interval $[4,8]$ it is continuous, so we can apply numerical methods to estimate the integral.
+
+  #+CAPTION: Graph of the function $f(x)$.
+  [[./function_graph.png]]
+
+* Strategy
+
+  I'm going to use 
+
+* Formula application
+* Use of technology
+* Error analysis
+* Intepretation
