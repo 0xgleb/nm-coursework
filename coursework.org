@@ -1,3 +1,26 @@
+#+LATEX_HEADER: \usepackage[margin=1.5cm,includefoot]{geometry}
+#+LATEX_HEADER: \usepackage[none]{hyphenat}
+#+LATEX_HEADER: \usepackage{array}
+#+LATEX_HEADER: \newcolumntype{$}{>{\global\let\currentrowstyle\relax}}
+#+LATEX_HEADER: \newcolumntype{^}{>{\currentrowstyle}}
+#+LATEX_HEADER: \newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1} #1\ignorespaces}
+
+#+OPTIONS: toc:nil title:nil
+
+\begin{titlepage}
+  \begin{center}
+    \line(1,0){300} \\
+    [5mm]
+    \huge{\bfseries Numerical Methods Coursework} \\
+    [5mm]
+    \huge{Gleb Dianov} \\
+  \end{center}
+\end{titlepage}
+
+\newpage
+
+\tableofcontents
+
 \newpage
 
 * Problem specification
@@ -27,7 +50,7 @@
   # why is this appropriate to the problem?
 
 * Formula application
-
+  #+ATTR_LATEX: :mode math :environment bmatrix
   |----+-------------------+--------------------+-------------------------------------|
   |  n |               S_n |      S_n - S_{n/2} | (S_n - S_{n/2})/(S_{n/2} - S_{n/4}) |
   |----+-------------------+--------------------+-------------------------------------|
@@ -54,6 +77,7 @@
   $$ S_{16n} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} - S_n}{16^2} + \frac{S_{2n} - S_n}{16^3} $$
   $$ S_{\infty} \approx S_{2n} + (S_{2n} - S_n) \sum_{k=1}^{\infty} 16^{-k} = S_{2n} + (S_{2n} - S_n) \frac{\frac{1}{16}}{1-\frac{1}{16}} = S_{2n} + \frac{S_{2n} - S_n}{15}$$
 
+  #+ATTR_LATEX: :mode math :environment bmatrix
   |----+-------------------+-------------------|
   |  n |               S_n |        S_{\infty} |
   |----+-------------------+-------------------|
@@ -78,10 +102,57 @@
 
   # discussion and validity?
 
+\newpage
 * Use of technology
 
-  #+CAPTION: "Code that I wrote to find the estimates."
-  [[./code.png]]
+  #+BEGIN_SRC haskell
+  import qualified Data.ByteString.Lazy as BL (writeFile)
+  import           Data.Csv             (encode)
+  import           Numeric              (showFFloat)
+
+  trp :: (Fractional a) => (a -> a) -> Integer -> (a, a) -> a
+  trp f n (a, b) =
+    (h / 2) * (f a + 2 * foldl (\p i -> p + f (a + h * fromIntegral i)) 0 [1..n-1] + f b)
+    where h = (b - a) / fromInteger n
+
+  mid :: (Fractional a) => (a -> a) -> Integer -> (a, a) -> a
+  mid f n (a, b) = h * foldl (\p i -> p + f (a + h * (fromIntegral i + 0.5))) 0 [0..n-1]
+    where h = (b - a) / fromInteger n
+
+  simp :: (Fractional a) => (a -> a) -> Integer -> (a, a) -> a
+  simp f n range = (2 * mid f n range + trp f n range) / 3
+
+  diffs :: Fractional b => [(a, b)] -> [(a, b, b, b)]
+  diffs = diffs3 . diffs2
+    where diffs2 []                 = []
+          diffs2 [(a, b)]           = [(a, b, 0)]
+          diffs2 ((a, b):(c, d):xs) =
+            (a, b, 0) : (\((x, y, _):ds) -> (x, y, d-b) : ds) (diffs2 $ (c, d) : xs)
+
+          diffs3 []                       = []
+          diffs3 [(a, b, c)]              = [(a, b, c, 0)]
+          diffs3 ((a, b, c):(d, e, f):xs) =
+            (a, b, c, 0) : (\((x, y, z, _):ds) -> (x, y, z, f/c) : ds) (diffs3 $ (d, e, f) : xs)
+
+  inf :: Fractional b => [(a, b, c, d)] -> [(a, b, c, d, b)]
+  inf []                             = []
+  inf [(a, b, c, d)]                 = [(a, b, c, d, 0)]
+  inf ((a, b, c, d):(e, f, g, h):xs) =
+    (a, b, c, d, 0) : (\((v,x,y,z,_):ds) -> (v,x,y,z,infExtr f b) : ds) (inf $ (e, f, g, h) : xs)
+    where infExtr x y = y - (y - x) / 15
+
+  showD :: Double -> String
+  showD x = showFFloat (Just 15) x ""
+
+  func :: Double -> Double
+  func x = sin x / log x + 1
+
+  main :: IO ()
+  main =  BL.writeFile file $ encode $ show5
+      <$> inf (diffs $ (\i -> (i, simp func i (4,8))) . (2^) <$> [1..6])
+    where show5 (a, b, c, d, e) = (a, showD b, showD c, showD d, showD d, showD e)
+          file = "results.csv"
+  #+END_SRC
   
   Function ~trp~ takes a function that we want to integrate, ~n~, and the range of the integral. It returns an estimate of the integral calculated using the trapezium rule:
 
@@ -102,13 +173,4 @@
   Function ~showD~ takes a double and prints it to 15 decimal points.
 
   The main function calculates the estimates of the integral using the simpson's rule for the first 6 powers of 2, finds differences, approximates $ S_{\infty} $ and writes it to a csv file.
-
-  #+BEGIN_SRC csv
-  2,3.528406104914693,0.000000000000000,0.000000000000000,0.000000000000000
-  4,3.528045906061354,-0.000360198853339,-Infinity,3.528382091657804
-  8,3.528023204687499,-0.000022701373855,0.063024558920655,3.528044392636430
-  16,3.528021763240090,-0.000001441447409,0.063496042914706,3.528023108591005
-  32,3.528021672685462,-0.000000090554628,0.062822013278819,3.528021757203115
-  64,3.528021667018047,-0.000000005667415,0.062585591613435,3.528021672307634
-  #+END_SRC
 
