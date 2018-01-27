@@ -4,46 +4,111 @@
 
   $$ f(x) = \frac{sin(x)}{ln(x)} + 1 $$
 
-  $$ \int_{4}^{8} f(x) dx = \int_{4}^{8} \frac{sin(x)}{ln(x)} + 1 dx $$
+  $$ \int_{4}^{8} f(x) dx = \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx $$
 
-  This integral cannot be solved analytically. On interval $[4,8]$ it is continuous, so we can apply numerical methods to estimate the integral.
+  This integral cannot be solved analytically.
 
-  #+CAPTION: Graph of the function $f(x)$.
+  #+CAPTION: Graph of $f(x)$.
   [[./function_graph.png]]
 
+  # why is this appropriate for numerical solution?
+
 * Strategy
+  On interval $[4,8]$ it is continuous and postitive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules.
 
-  To approximate this integral I used the Simpson's rule. It can be derived from midpoint and trapezoidal rules.
+  $$ M_n = h * \sum_{i=1}^{n-1} f (a + (i + 0.5) h) $$
 
-  $$ M_1 = (b-a)f(\frac{a+b}{2}) $$
-
-  $$ T_1 = \frac{1}{2}(b-a)(f(a) + f(b)) $$
+  $$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
 
   If we take weighted average of these then the leading error term vanishes.
 
   $$ S_n = \frac{2M_n+T_n}{3} $$
 
+  # why is this appropriate to the problem?
+
 * Formula application
 
-  |----+--------------------|
-  |  2 |  3.528406104914693 |
-  |----+--------------------|
-  |  4 |  3.528045906061354 |
-  |----+--------------------|
-  |  8 | 3.5280232046874986 |
-  |----+--------------------|
-  | 16 |   3.52802176324009 |
-  |----+--------------------|
-  | 32 |  3.528021672685462 |
-  |----+--------------------|
-  | 64 |  3.528021667018047 |
-  |----+--------------------|
-  
+  |----+-------------------+--------------------+-------------------------------------|
+  |  n |               S_n |      S_n - S_{n/2} | (S_n - S_{n/2})/(S_{n/2} - S_{n/4}) |
+  |----+-------------------+--------------------+-------------------------------------|
+  |  2 | 3.528406104914693 |                    |                                     |
+  |----+-------------------+--------------------+-------------------------------------|
+  |  4 | 3.528045906061354 | -0.000360198853339 |                                     |
+  |----+-------------------+--------------------+-------------------------------------|
+  |  8 | 3.528023204687499 | -0.000022701373855 |                   0.063024558920655 |
+  |----+-------------------+--------------------+-------------------------------------|
+  | 16 | 3.528021763240090 | -0.000001441447409 |                   0.063496042914706 |
+  |----+-------------------+--------------------+-------------------------------------|
+  | 32 | 3.528021672685462 | -0.000000090554628 |                   0.062822013278819 |
+  |----+-------------------+--------------------+-------------------------------------|
+  | 64 | 3.528021667018047 | -0.000000005667415 |                   0.062585591613435 |
+  |----+-------------------+--------------------+-------------------------------------|
+
+  # do we need anything else?
+
+* Error analysis
+
+  $$ \frac{S_{4n} - S_{2n}}{S_{2n} - S_n} \approx \frac{1}{16} $$
+  $$ S_{4n} \approx S_n + \frac{S_{2n} - S_n}{16} $$
+  $$ \implies S_{8n} \approx S_{2n} + \frac{S_{4n} - S_{2n}}{16} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} + \frac{S_{2n} - S_n}{16} - S_{2n}}{16} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} - S_n}{16^2} $$
+  $$ S_{16n} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} - S_n}{16^2} + \frac{S_{2n} - S_n}{16^3} $$
+  $$ S_{\infty} \approx S_{2n} + (S_{2n} - S_n) \sum_{k=1}^{\infty} 16^{-k} = S_{2n} + (S_{2n} - S_n) \frac{\frac{1}{16}}{1-\frac{1}{16}} = S_{2n} + \frac{S_{2n} - S_n}{15}$$
+
+  |----+-------------------+-------------------|
+  |  n |               S_n |        S_{\infty} |
+  |----+-------------------+-------------------|
+  |  2 | 3.528406104914693 |                   |
+  |----+-------------------+-------------------|
+  |  4 | 3.528045906061354 | 3.528382091657804 |
+  |----+-------------------+-------------------|
+  |  8 | 3.528023204687499 | 3.528044392636430 |
+  |----+-------------------+-------------------|
+  | 16 | 3.528021763240090 | 3.528023108591005 |
+  |----+-------------------+-------------------|
+  | 32 | 3.528021672685462 | 3.528021757203115 |
+  |----+-------------------+-------------------|
+  | 64 | 3.528021667018047 | 3.528021672307634 |
+  |----+-------------------+-------------------|
+
+  # how should I comment this?
+
+* Interpretation
+
+  $$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528021 $$
+
+  # discussion and validity?
+
 * Use of technology
 
   #+CAPTION: "Code that I wrote to find the estimates."
-
   [[./code.png]]
+  
+  Function ~trp~ takes a function that we want to integrate, ~n~, and the range of the integral. It returns an estimate of the integral calculated using the trapezium rule:
 
-* Error analysis
-* Intepretation
+  $$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
+
+  Function ~mid~ takes a function that we want to integrate, ~n~, and the range of the integral. It returns an estimate of the integral calculated using the midpoint rule:
+
+  $$ M_n = h * \sum_{i=1}^{n-1} f (a + (i + 0.5) h) $$
+
+  Function ~simp~ takes a function that we want to integrate, ~n~, and the range of the integral. It returns an estimate of the integral calculated using the Simpson's rule:
+
+  $$ S_n = \frac{2 M_n + T_n}{3} $$
+
+  Function ~diffs~ takes a list of pairs and returns a list of tupples with differences.
+
+  Function ~extrapolate~ makes infinity extrapolations for the simpson's method.
+
+  Function ~showD~ takes a double and prints it to 15 decimal points.
+
+  The main function calculates the estimates of the integral using the simpson's rule for the first 6 powers of 2, finds differences, approximates $ S_{\infty} $ and writes it to a csv file.
+
+  #+BEGIN_SRC csv
+  2,3.528406104914693,0.000000000000000,0.000000000000000,0.000000000000000
+  4,3.528045906061354,-0.000360198853339,-Infinity,3.528382091657804
+  8,3.528023204687499,-0.000022701373855,0.063024558920655,3.528044392636430
+  16,3.528021763240090,-0.000001441447409,0.063496042914706,3.528023108591005
+  32,3.528021672685462,-0.000000090554628,0.062822013278819,3.528021757203115
+  64,3.528021667018047,-0.000000005667415,0.062585591613435,3.528021672307634
+  #+END_SRC
+
