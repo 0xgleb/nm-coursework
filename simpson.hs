@@ -40,7 +40,7 @@ func :: Double -> Double
 func x = sin x / log x + 1
 
 main :: IO ()
-main =  BL.writeFile file $ encode $ show5
+main =  BL.writeFile file $ encode $ show7 . (\(a, b, c, d, e) -> (a, trp func a (4, 8), mid func a (4, 8), b, c, d, e))
     <$> inf (diffs $ (\i -> (i, simp func i (4,8))) . (2^) <$> [1..6])
-  where show5 (a, b, c, d, e) = (a, showD b, showD c, showD d, showD d, showD e)
+  where show7 (a, b, c, d, e, f, g) = (a, showD b, showD c, showD d, showD e, showD f, showD g)
         file = "results.csv"

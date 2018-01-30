@@ -35,7 +35,7 @@
   [[./function_graph.png]]
 
 * Strategy
-  On interval $[4,8]$ it is continuous and postitive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules.
+  On interval $[4,8]$ it is continuous and postitive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules. Estimating definite integrals is estimating areas. Trapezium rule estimates the area by spliting it into trapezoids and calculating their areas. The midpoint rule does almost the same thing, but instead of calculating the average of lenghts of bases to find the area it uses the integrand value at the middle point of a range.
 
   $$ M_n = h * \sum_{i=1}^{n-1} f (a + (i + 0.5) h) $$
 
@@ -45,29 +45,23 @@
 
   $$ S_n = \frac{2M_n+T_n}{3} $$
 
-  # why is this appropriate to the problem?
-  approximation of area...
-
 * Formula application
   #+ATTR_LATEX: :mode math :environment bmatrix
-  |----+-------------------+--------------------+-------------------------------------|
-  |  n |               S_n |      S_n - S_{n/2} | (S_n - S_{n/2})/(S_{n/2} - S_{n/4}) |
-  |----+-------------------+--------------------+-------------------------------------|
-  |  2 | 3.528406104914693 |                    |                                     |
-  |----+-------------------+--------------------+-------------------------------------|
-  |  4 | 3.528045906061354 | -0.000360198853339 |                                     |
-  |----+-------------------+--------------------+-------------------------------------|
-  |  8 | 3.528023204687499 | -0.000022701373855 |                   0.063024558920655 |
-  |----+-------------------+--------------------+-------------------------------------|
-  | 16 | 3.528021763240090 | -0.000001441447409 |                   0.063496042914706 |
-  |----+-------------------+--------------------+-------------------------------------|
-  | 32 | 3.528021672685462 | -0.000000090554628 |                   0.062822013278819 |
-  |----+-------------------+--------------------+-------------------------------------|
-  | 64 | 3.528021667018047 | -0.000000005667415 |                   0.062585591613435 |
-  |----+-------------------+--------------------+-------------------------------------|
-
-  # do we need anything else?
-  columns for midpoint and trapezium
+  |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
+  |  n |               T_n |               M_n |               S_n |      S_n - S_{n/2} | (S_n - S_{n/2})/(S_{n/2} - S_{n/4}) |
+  |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
+  |  2 | 3.617973624362951 | 3.483622345190564 | 3.528406104914693 |                    |                                     |
+  |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
+  |  4 | 3.550797984776757 | 3.516669866703652 | 3.528045906061354 | -0.000360198853339 |                                     |
+  |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
+  |  8 | 3.533733925740205 | 3.525167844161146 | 3.528023204687499 | -0.000022701373855 |                   0.063024558920655 |
+  |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
+  | 16 | 3.529450884950675 | 3.527307202384797 | 3.528021763240090 | -0.000001441447409 |                   0.063496042914706 |
+  |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
+  | 32 | 3.528379043667736 | 3.527842987194325 | 3.528021672685462 | -0.000000090554628 |                   0.062822013278819 |
+  |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
+  | 64 | 3.528111015431030 | 3.527976992811555 | 3.528021667018047 | -0.000000005667415 |                   0.062585591613435 |
+  |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
 
 * Error analysis
 
@@ -96,11 +90,9 @@
 
 * Interpretation
 
-  $$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528021 $$
+  $$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528022 $$
 
-  # discussion and validity?
-
-  rounding simpson's rule estimates and extrapolations to infinity
+  We can see that simpson's rule estimates round to $ 3.528022 $ for $ n = 16, 32, 64 $. Also the extrapolations to infinity for these values of $ n $ round to it. Therefore, we can say with a high level of confidence that it is the integral to 6 decimal places.
 
 \newpage
 * Use of technology
@@ -148,12 +140,13 @@
   func x = sin x / log x + 1
 
   main :: IO ()
-  main =  BL.writeFile file $ encode $ show5
+  main =  BL.writeFile file $ encode
+       $  show7 . (\(a, b, c, d, e) -> (a, trp func a (4, 8), mid func a (4, 8), b, c, d, e))
       <$> inf (diffs $ (\i -> (i, simp func i (4,8))) . (2^) <$> [1..6])
-    where show5 (a, b, c, d, e) = (a, showD b, showD c, showD d, showD d, showD e)
+    where show7 (a, b, c, d, e, f, g) = (a, showD b, showD c, showD d, showD e, showD f, showD g)
           file = "results.csv"
   #+END_SRC
-  
+
   Function ~trp~ takes a function that we want to integrate, ~n~, and the range of the integral. It returns an estimate of the integral calculated using the trapezium rule:
 
   $$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
