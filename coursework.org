@@ -35,13 +35,13 @@
   [[./function_graph.png]]
 
 * Strategy
-  On interval $[4,8]$ it is continuous and postitive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules. Estimating definite integrals is estimating areas. Trapezium rule estimates the area by spliting it into trapezoids and calculating their areas. The midpoint rule does almost the same thing, but instead of calculating the average of lenghts of bases to find the area it uses the integrand value at the middle point of a range.
+  On interval $[4,8]$ it is continuous and positive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules. Estimating definite integrals is estimating areas. Trapezium rule estimates the area by splitting it into trapezoids and calculating their areas. The midpoint rule does almost the same thing, but instead of calculating the average of lengths of bases to find the area it uses the integrand value at the middle point of a range.
 
   $$ M_n = h * \sum_{i=1}^{n-1} f (a + (i + 0.5) h) $$
 
   $$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
 
-  If we take weighted average of these then the leading error term vanishes.
+  If we take the weighted average of these then the leading error term vanishes.
 
   $$ S_n = \frac{2M_n+T_n}{3} $$
 
@@ -92,7 +92,7 @@
 
   $$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528022 $$
 
-  We can see that simpson's rule estimates round to $ 3.528022 $ for $ n = 16, 32, 64 $. Also the extrapolations to infinity for these values of $ n $ round to it. Therefore, we can say with a high level of confidence that it is the integral to 6 decimal places.
+  We can see that Simpson's rule estimates round to $ 3.528022 $ for $ n = 16, 32, 64 $. Also the extrapolations to infinity for these values of $ n $ round to it. Therefore, we can say with a high level of confidence that it is the integral to 6 decimal places.
 
 \newpage
 * Use of technology
@@ -147,23 +147,23 @@
           file = "results.csv"
   #+END_SRC
 
-  Function ~trp~ takes a function that we want to integrate, ~n~, and the range of the integral. It returns an estimate of the integral calculated using the trapezium rule:
+  Function ~trp~ takes a function that we want to integrate, ~n~, and an interval. It returns an estimate of the integral calculated using the trapezium rule:
 
   $$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
 
-  Function ~mid~ takes a function that we want to integrate, ~n~, and the range of the integral. It returns an estimate of the integral calculated using the midpoint rule:
+  Function ~mid~ takes a function that we want to integrate, ~n~, and an interval. It returns an estimate of the integral calculated using the midpoint rule:
 
   $$ M_n = h * \sum_{i=1}^{n-1} f (a + (i + 0.5) h) $$
 
-  Function ~simp~ takes a function that we want to integrate, ~n~, and the range of the integral. It returns an estimate of the integral calculated using the Simpson's rule:
+  Function ~simp~ takes a function that we want to integrate, ~n~, and an interval. It returns an estimate of the integral calculated using the Simpson's rule:
 
   $$ S_n = \frac{2 M_n + T_n}{3} $$
 
-  Function ~diffs~ takes a list of pairs and returns a list of tupples with differences.
+  Function ~diffs~ takes a list of pairs and returns a list of tupples with differences and ratios of differences.
 
-  Function ~extrapolate~ makes infinity extrapolations for the simpson's method.
+  Function ~extrapolate~ calculates extrapolations to infinity of the Simpson's method.
 
   Function ~showD~ takes a double and prints it to 15 decimal points.
 
-  The main function calculates the estimates of the integral using the simpson's rule for the first 6 powers of 2, finds differences, approximates $ S_{\infty} $ and writes it to a csv file.
+  The main function calculates $ S_2 $, $ S_4 $, $ S_8 $, $ S_16 $, $ S_32 $, $ S_64 $; finds the differences and the ratios of the differences; approximates $ S_{\infty} $; calculates values of $ T_n $ and $ M_n$; and writes all the results into a csv file called "results.csv".
 
