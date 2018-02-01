@@ -34,8 +34,6 @@
   #+CAPTION: Graph of $f(x)$.
   [[./function_graph.png]]
 
-  # why is this appropriate for numerical solution?
-
 * Strategy
   On interval $[4,8]$ it is continuous and postitive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules.
 
@@ -48,6 +46,7 @@
   $$ S_n = \frac{2M_n+T_n}{3} $$
 
   # why is this appropriate to the problem?
+  approximation of area...
 
 * Formula application
   #+ATTR_LATEX: :mode math :environment bmatrix
@@ -68,6 +67,7 @@
   |----+-------------------+--------------------+-------------------------------------|
 
   # do we need anything else?
+  columns for midpoint and trapezium
 
 * Error analysis
 
@@ -94,13 +94,13 @@
   | 64 | 3.528021667018047 | 3.528021672307634 |
   |----+-------------------+-------------------|
 
-  # how should I comment this?
-
 * Interpretation
 
   $$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528021 $$
 
   # discussion and validity?
+
+  rounding simpson's rule estimates and extrapolations to infinity
 
 \newpage
 * Use of technology
