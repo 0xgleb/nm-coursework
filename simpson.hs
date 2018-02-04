@@ -1,37 +1,38 @@
 import qualified Data.ByteString.Lazy as BL (writeFile)
-import           Data.Csv             (encode)
+import           Data.Csv
 import           Numeric              (showFFloat)
 
-trp :: (Fractional a) => (a -> a) -> Integer -> (a, a) -> a
-trp f n (a, b) =
-  (h / 2) * (f a + 2 * foldl (\p i -> p + f (a + h * fromIntegral i)) 0 [1..n-1] + f b)
-  where h = (b - a) / fromInteger n
+data Estimate = Estimate { n             :: Integer
+                         , trapezium     :: Double
+                         , midpoint      :: Double
+                         , simpsons      :: Double
+                         , difference    :: Maybe Double
+                         , ratio         :: Maybe Double
+                         , extrapolation :: Maybe Double
+                         }
 
-mid :: (Fractional a) => (a -> a) -> Integer -> (a, a) -> a
-mid f n (a, b) = h * foldl (\p i -> p + f (a + h * (fromIntegral i + 0.5))) 0 [0..n-1]
-  where h = (b - a) / fromInteger n
+estimate :: (Double -> Double) -> Integer -> (Double, Double) -> Estimate
+estimate f m (a, b) = Estimate m trp mid simp Nothing Nothing Nothing
+  where h = (b - a) / fromInteger m
+        trp = (h / 2) * (f a + 2 * foldl (\p i -> p + f (a + h * fromIntegral i)) 0 [1..m-1] + f b)
+        mid = h * foldl (\p i -> p + f (a + h * (fromIntegral i + 0.5))) 0 [0..m-1]
+        simp = (2 * mid + trp) / 3
 
-simp :: (Fractional a) => (a -> a) -> Integer -> (a, a) -> a
-simp f n range = (2 * mid f n range + trp f n range) / 3
+applyToNext :: (a -> a -> b) -> [a] -> [b]
+applyToNext o l = zipWith o (tail l) (init l)
 
-diffs :: Fractional b => [(a, b)] -> [(a, b, b, b)]
-diffs = diffs3 . diffs2
-  where diffs2 []                 = []
-        diffs2 [(a, b)]           = [(a, b, 0)]
-        diffs2 ((a, b):(c, d):xs) =
-          (a, b, 0) : (\((x, y, _):ds) -> (x, y, d-b) : ds) (diffs2 $ (c, d) : xs)
+applyToNextRes :: (Estimate -> a) -> (a -> a -> b) -> (Estimate -> b -> Estimate) -> [Estimate] -> [Estimate]
+applyToNextRes getter f setter es@(e:_) = e : applyToNext (\res2 res1 -> setter res2 $ f (getter res2) (getter res1)) es
+applyToNextRes _      _ _      []      = []
 
-        diffs3 []                       = []
-        diffs3 [(a, b, c)]              = [(a, b, c, 0)]
-        diffs3 ((a, b, c):(d, e, f):xs) =
-          (a, b, c, 0) : (\((x, y, z, _):ds) -> (x, y, z, f/c) : ds) (diffs3 $ (d, e, f) : xs)
+diffs :: [Estimate] -> [Estimate]
+diffs = applyToNextRes simpsons (-) (\est d -> est { difference = Just d })
 
-inf :: Fractional b => [(a, b, c, d)] -> [(a, b, c, d, b)]
-inf []                             = []
-inf [(a, b, c, d)]                 = [(a, b, c, d, 0)]
-inf ((a, b, c, d):(e, f, g, h):xs) =
-  (a, b, c, d, 0) : (\((v,x,y,z,_):ds) -> (v,x,y,z,infExtr f b) : ds) (inf $ (e, f, g, h) : xs)
-  where infExtr x y = y - (y - x) / 15
+ratios :: [Estimate] -> [Estimate]
+ratios = applyToNextRes difference (\d2 d1 -> (/) <$> d2 <*> d1) (\est r -> est { ratio = r })
+
+inf :: [Estimate] -> [Estimate]
+inf = applyToNextRes simpsons (\s2n sn -> s2n - (s2n - sn) / 15) (\est extr -> est { extrapolation = Just extr })
 
 showD :: Double -> String
 showD x = showFFloat (Just 15) x ""
@@ -39,8 +40,20 @@ showD x = showFFloat (Just 15) x ""
 func :: Double -> Double
 func x = sin x / log x + 1
 
+instance ToRecord Estimate where
+    toRecord (Estimate i t m s d r e) =
+      record [ toField i
+             , toField $ showD t
+             , toField $ showD m
+             , toField $ showD s
+             , toField $ showD <$> d
+             , toField $ showD <$> r
+             , toField $ showD <$> e
+             ]
+
+range :: (Double, Double)
+range = (4, 8)
+
 main :: IO ()
-main =  BL.writeFile file $ encode $ show7 . (\(a, b, c, d, e) -> (a, trp func a (4, 8), mid func a (4, 8), b, c, d, e))
-    <$> inf (diffs $ (\i -> (i, simp func i (4,8))) . (2^) <$> [1..6])
-  where show7 (a, b, c, d, e, f, g) = (a, showD b, showD c, showD d, showD e, showD f, showD g)
-        file = "results.csv"
+main = BL.writeFile file $ encode $ inf $ ratios $ diffs $ (\i -> estimate func i range) . (2^) <$> [1..6]
+  where file = "results.csv"
