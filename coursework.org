@@ -48,7 +48,7 @@
 * Formula application
   #+ATTR_LATEX: :mode math :environment bmatrix
   |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
-  |  n |               T_n |               M_n |               S_n |      S_n - S_{n/2} | (S_n - S_{n/2})/(S_{n/2} - S_{n/4}) |
+  |  n |               T_n |               M_n |               S_n |      S_n - S_{n/2} | \frac{S_n - S_{n/2}}{S_{n/2} - S_{n/4}} |
   |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
   |  2 | 3.617973624362951 | 3.483622345190564 | 3.528406104914693 |                    |                                     |
   |----+-------------------+-------------------+-------------------+--------------------+-------------------------------------|
@@ -92,7 +92,7 @@
 
   $$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528022 $$
 
-  We can see that Simpson's rule estimates round to $ 3.528022 $ for $ n = 16, 32, 64 $. Also the extrapolations to infinity for these values of $ n $ round to it. Therefore, we can say with a high level of confidence that it is the integral to 6 decimal places.
+  We can see that Simpson's rule estimates round to $3.528022$ for $n = 16, 32, 64$. Also the extrapolations to infinity for these values of $n$ round to it. Therefore, we can say with a high level of confidence that it is the integral to 6 decimal places.
 
 \newpage
 * Use of technology
@@ -165,5 +165,5 @@
 
   Function ~showD~ takes a double and prints it to 15 decimal points.
 
-  The main function calculates $ S_2 $, $ S_4 $, $ S_8 $, $ S_16 $, $ S_32 $, $ S_64 $; finds the differences and the ratios of the differences; approximates $ S_{\infty} $; calculates values of $ T_n $ and $ M_n$; and writes all the results into a csv file called "results.csv".
+  The main function calculates $S_2$, $S_4$, $S_8$, $S_16$, $S_32$, $S_64$; finds the differences and the ratios of the differences; approximates $S_{\infty}$; calculates values of $T_n$ and $M_n$; and writes all the results into a csv file called "results.csv".
 
