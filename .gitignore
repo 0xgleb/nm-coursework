@@ -1,3 +1,8 @@
+*.csv
+*.aux
+*.log
+*.out
 *.pdf
 *.tex
-*.csv
+*.toc
+_minted-coursework
