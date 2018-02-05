@@ -9,7 +9,7 @@ data Estimate = Estimate { n             :: Integer
                          , difference    :: Maybe Double
                          , ratio         :: Maybe Double
                          , extrapolation :: Maybe Double
-                         }
+                         } deriving Show
 
 estimate :: (Double -> Double) -> Integer -> (Double, Double) -> Estimate
 estimate f m (a, b) = Estimate m trp mid simp Nothing Nothing Nothing
@@ -23,7 +23,7 @@ applyToNext o l = zipWith o (tail l) (init l)
 
 applyToNextRes :: (Estimate -> a) -> (a -> a -> b) -> (Estimate -> b -> Estimate) -> [Estimate] -> [Estimate]
 applyToNextRes getter f setter es@(e:_) = e : applyToNext (\res2 res1 -> setter res2 $ f (getter res2) (getter res1)) es
-applyToNextRes _      _ _      []      = []
+applyToNextRes _      _ _      []       = []
 
 diffs :: [Estimate] -> [Estimate]
 diffs = applyToNextRes simpsons (-) (\est d -> est { difference = Just d })

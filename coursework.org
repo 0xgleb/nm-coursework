@@ -67,8 +67,8 @@ $$ S_n = \frac{2M_n+T_n}{3} $$
 * Error analysis
 
 $$ \frac{S_{4n} - S_{2n}}{S_{2n} - S_n} \approx \frac{1}{16} $$
-$$ S_{4n} \approx S_n + \frac{S_{2n} - S_n}{16} $$
-$$ \implies S_{8n} \approx S_{2n} + \frac{S_{4n} - S_{2n}}{16} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} + \frac{S_{2n} - S_n}{16} - S_{2n}}{16} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} - S_n}{16^2} $$
+$$ S_{4n} \approx S_{2n} + \frac{S_{2n} - S_n}{16} $$
+$$ \implies S_{8n} \approx S_{4n} + \frac{S_{4n} - S_{2n}}{16} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} + \frac{S_{2n} - S_n}{16} - S_{2n}}{16} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} - S_n}{16^2} $$
 $$ S_{16n} \approx S_{2n} + \frac{S_{2n} - S_n}{16} + \frac{S_{2n} - S_n}{16^2} + \frac{S_{2n} - S_n}{16^3} $$
 $$ S_{\infty} \approx S_{2n} + (S_{2n} - S_n) \sum_{k=1}^{\infty} 16^{-k} = S_{2n} + (S_{2n} - S_n) \frac{\frac{1}{16}}{1-\frac{1}{16}} = S_{2n} + \frac{S_{2n} - S_n}{15}$$
 
