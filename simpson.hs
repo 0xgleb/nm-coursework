@@ -32,7 +32,7 @@ ratios :: [Estimate] -> [Estimate]
 ratios = applyToNextRes difference (\d2 d1 -> (/) <$> d2 <*> d1) (\est r -> est { ratio = r })
 
 inf :: [Estimate] -> [Estimate]
-inf = applyToNextRes simpsons (\s2n sn -> s2n - (s2n - sn) / 15) (\est extr -> est { extrapolation = Just extr })
+inf = applyToNextRes simpsons (\s2n sn -> s2n + (s2n - sn) / 15) (\est extr -> est { extrapolation = Just extr })
 
 showD :: Double -> String
 showD x = showFFloat (Just 15) x ""
