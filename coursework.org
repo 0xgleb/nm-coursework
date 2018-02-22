@@ -1,11 +1,10 @@
-#+STARTUP: indent
-
 #+LATEX_HEADER: \usepackage[margin=1.5cm,includefoot]{geometry}
 #+LATEX_HEADER: \usepackage[none]{hyphenat}
 #+LATEX_HEADER: \usepackage{array}
 #+LATEX_HEADER: \newcolumntype{$}{>{\global\let\currentrowstyle\relax}}
 #+LATEX_HEADER: \newcolumntype{^}{>{\currentrowstyle}}
 #+LATEX_HEADER: \newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1} #1\ignorespaces}
+#+LATEX_HEADER: \usepackage{indentfirst}
 
 #+OPTIONS: toc:nil title:nil
 
@@ -36,9 +35,57 @@ This integral cannot be solved analytically.
 [[./function_graph.png]]
 
 * Strategy
+
 On interval $[4,8]$ it is continuous and positive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules. Estimating definite integrals is estimating areas. Trapezium rule estimates the area by splitting it into trapezoids and calculating their areas. The midpoint rule does almost the same thing, but instead of calculating the average of lengths of bases to find the area it uses the integrand value at the middle point of a range.
 
-$$ M_n = h * \sum_{i=1}^{n-1} f (a + (i + 0.5) h) $$
+We know that definite integrals calculate the area under the curve. We can estimate that area using different methods.
+
+** Trapezium rule
+
+Trapezium rule splits the curve into trapeziums the areas of which we can easily calculate.
+We have $n$ trapeziums with total area $A$. The area of the trapezium $i$ is $A_i$.
+
+$$ A_i = \frac{f(x_{i+1}) + f(x_i)}{2}(x_{i+1} - x_i) $$
+
+$$ \forall i: x_{i+1} - x_i = h = \frac{x_n - x_0}{n} $$
+
+$$ \implies A_i = h\frac{f(x_i + h) + f(x_i)}{2} $$
+
+$$ \implies \int_{x_0}^{x_n} f(x) dx \approx \sum_{i=0}^{n-1} A_i = \sum_{i=0}^{n-1} h\frac{f(x_i + h) + f(x_i)}{2} $$
+
+$$ \implies \int_{x_0}^{x_n} f(x) dx \approx \sum_{i=0}^{n-1} A_i = \frac{h}{2} \sum_{i=0}^{n-1} (f(x_i) + f(x_i + h)) $$
+
+$$ \implies \int_{x_0}^{x_n} f(x) dx \approx \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
+
+$$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
+
+** Midpoint rule
+
+Midpoint rule estimates the area using rectangles. A rectangle has a side $(b, a)$ of width $b-a$ and the height of the rectangle is $f(\frac{a+b}{2})$.
+
+$$ A_i = (x_{i+1} - x_i) * f(\frac{x_{i+1} + x_i}{2}) $$
+
+$$ \forall i: x_{i+1} - x_i = h = \frac{x_n - x_0}{n} $$
+
+$$ \implies A_i = h * f(\frac{2x_i + h}{2}) $$
+
+$$ \implies A_i = h * f(x_i + \frac{h}{2}) $$
+
+$$ \forall i: x_i = x_0 + i * h$$
+
+$$ \implies A_i = h * f(x_0 + i * h + \frac{h}{2}) $$
+
+$$ \implies A_i = h * f(x_0 + (i + \frac{1}{2})h) $$
+
+$$ \implies \int_{x_0}^{x_n} f(x) dx \approx \sum_{i=0}^{n-1} A_i = \sum_{i=0}^{n-1} h * f(x_) + (i + \frac{1}{2})h))$$
+
+$$ \implies \int_{x_0}^{x_n} f(x) dx \approx h * \sum_{i=0}^{n-1} f(x_0 + (i + 0.5) h) $$
+
+$$ M_n = h * \sum_{i=0}^{n-1} f(x_0 + (i + 0.5) h) $$
+
+** Simpson's rule
+
+$$ M_n = h * \sum_{i=0}^{n-1} f(a + (i + 0.5) h) $$
 
 $$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
 
@@ -99,25 +146,100 @@ We can see that Simpson's rule estimates round to $3.528022$ for $n = 16, 32, 64
 * Use of technology
 
 #+BEGIN_SRC haskell
+import qualified Data.ByteString.Lazy as BL (writeFile)
+import           Data.Csv
+import           Numeric              (showFFloat)
+
+{-| A new data type for saving estimates -}
+data Estimate = Estimate { n             :: Integer      -- ^ n
+                         , trapezium     :: Double       -- ^ estimate by the trapezium rule
+                         , midpoint      :: Double       -- ^ estimate by the midpoint rule
+                         , simpsons      :: Double       -- ^ estimate by Simpson's rule
+                         , difference    :: Maybe Double -- ^ S_n - S_{n/2}
+                         , ratio         :: Maybe Double -- ^ (S_n - S_{n/2}) / (S_{n/2} - S_{n/4})
+                         , extrapolation :: Maybe Double -- ^ S_n + (S_n - S_{n/2})/15
+                         } deriving Show
+
+{-| This function takes a function that we want to integrate, how many strips we want to use
+and a range. It calculates three estimates using the trapezium, midpoint and Simpson's rules.
+It returns the estimates using the Estimate data type.
+-}
+estimate :: (Double -> Double) -> Integer -> (Double, Double) -> Estimate
+estimate f m (a, b) = Estimate m trp mid simp Nothing Nothing Nothing
+  where h = (b - a) / fromInteger m -- length of a strip
+        trp = (h / 2) * (f a + 2 * foldl (\p i -> p + f (a + h * fromIntegral i)) 0 [1..m-1] + f b)
+        -- the trapezium rule
+        mid = h * foldl (\p i -> p + f (a + h * (fromIntegral i + 0.5))) 0 [0..m-1]
+        -- the midpoint rule
+        simp = (2 * mid + trp) / 3
+        -- Simpson's rule
+
+{-| This function takes a function f that with two arguments and a list [x_1, x_2, ..., x_n].
+It returns the list [f(x_2, x_1), f(x_3, x_2), ..., f(x_n, x_{n-1})].
+-}
+applyToNext :: (a -> a -> b) -> [a] -> [b]
+applyToNext o l = zipWith o (tail l) (init l)
+
+{-| This function takes a function that extracts a value from an estimate g, a function f with two
+arguments, a function that updates an estimate s, a list [e_1, ..., e_n] and returns
+[e_1, s(e_2, f(g(e_2), (e_1))), s(e_3, f(g(e_3), (e_2))), ..., s(e_n, f(g(e_n), (e_{n-1})))]
+-}
+applyToNextRes :: (e -> a) -> (a -> a -> b) -> (e -> b -> e) -> [e] -> [e]
+applyToNextRes _      _ _      []       = []
+applyToNextRes getter f setter es@(e:_) =
+    e : applyToNext (\res2 res1 -> setter res2 $ f (getter res2) (getter res1)) es
+
+{-| This function takes a list of estimates and returns the same estimates, but
+with the difference field updated for each estimate (except the first one)
+-}
+diffs :: [Estimate] -> [Estimate]
+diffs = applyToNextRes simpsons (-) (\est d -> est { difference = Just d })
+
+{-| This function takes a list of estimates and returns the same estimates, but
+with the ratio field updated for each estimate (except for the first two)
+-}
+ratios :: [Estimate] -> [Estimate]
+ratios = applyToNextRes difference (\d2 d1 -> (/) <$> d2 <*> d1) (\est r -> est { ratio = r })
+
+{-| This function takes a list of estimates and returns the same estimates, but
+with the extrapolation field updated for each estimate (except for the first one)
+-}
+inf :: [Estimate] -> [Estimate]
+inf = applyToNextRes simpsons (\s2n sn -> s2n + (s2n - sn) / 15) setter
+      where setter est extr = est { extrapolation = Just extr } -- updates the extrapolation field
+
+{-| This function takes a number and converts it to a string with the number up to 15 d.p. -}
+showD :: Double -> String
+showD x = showFFloat (Just 15) x ""
+
+{-| This is the function that we want to integrate -}
+func :: Double -> Double
+func x = sin x / log x + 1
+
+{-| Estimate is made an instance of the ToRecord type class
+so that we can write estimates to a csv file
+-}
+instance ToRecord Estimate where
+    toRecord (Estimate i t m s d r e) =
+      record [ toField i
+             , toField $ showD t
+             , toField $ showD m
+             , toField $ showD s
+             , toField $ showD <$> d
+             , toField $ showD <$> r
+             , toField $ showD <$> e
+             ]
+
+{-| Range of the integral -}
+range :: (Double, Double)
+range = (4, 8)
+
+{-| Main procedure. This is an IO action that finds estimates, differences, ratios,
+and extrapolations for values of n which are the first 6 powers of 2.
+Then it writes all the estimates into a csv file.
+-}
+main :: IO ()
+main = BL.writeFile file $ encode $ inf $ ratios $ diffs $ nToEstimate . (2^) <$> [1..6]
+  where nToEstimate i = estimate func i range
+        file = "results.csv"
 #+END_SRC
-
-Function ~trp~ takes a function that we want to integrate, ~n~, and an interval. It returns an estimate of the integral calculated using the trapezium rule:
-
-$$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
-
-Function ~mid~ takes a function that we want to integrate, ~n~, and an interval. It returns an estimate of the integral calculated using the midpoint rule:
-
-$$ M_n = h * \sum_{i=1}^{n-1} f (a + (i + 0.5) h) $$
-
-Function ~simp~ takes a function that we want to integrate, ~n~, and an interval. It returns an estimate of the integral calculated using the Simpson's rule:
-
-$$ S_n = \frac{2 M_n + T_n}{3} $$
-
-Function ~diffs~ takes a list of pairs and returns a list of tupples with differences and ratios of differences.
-
-Function ~extrapolate~ calculates extrapolations to infinity of the Simpson's method.
-
-Function ~showD~ takes a double and prints it to 15 decimal points.
-
-The main function calculates $S_2$, $S_4$, $S_8$, $S_16$, $S_32$, $S_64$; finds the differences and the ratios of the differences; approximates $S_{\infty}$; calculates values of $T_n$ and $M_n$; and writes all the results into a csv file called "results.csv".
-
