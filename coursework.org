@@ -55,9 +55,11 @@ $$ \implies \int_{x_0}^{x_n} f(x) dx \approx \sum_{i=0}^{n-1} A_i = \sum_{i=0}^{
 
 $$ \implies \int_{x_0}^{x_n} f(x) dx \approx \sum_{i=0}^{n-1} A_i = \frac{h}{2} \sum_{i=0}^{n-1} (f(x_i) + f(x_i + h)) $$
 
-$$ \implies \int_{x_0}^{x_n} f(x) dx \approx \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
+$$ \implies \int_{x_0}^{x_n} f(x) dx \approx \frac{h}{2} * (f(x_0) + 2 \sum_{i=1}^{n-1} f(x_0 + i*h) + f(x_n)) $$
 
-$$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
+$$ T_n = \frac{h}{2} * (f(x_0) + 2 \sum_{i=1}^{n-1} f(x_0 + i*h) + f(x_n)) $$
+
+[[./trapezium.png]]
 
 ** Midpoint rule
 
@@ -83,13 +85,11 @@ $$ \implies \int_{x_0}^{x_n} f(x) dx \approx h * \sum_{i=0}^{n-1} f(x_0 + (i + 0
 
 $$ M_n = h * \sum_{i=0}^{n-1} f(x_0 + (i + 0.5) h) $$
 
+[[./midpoint.png]]
+
 ** Simpson's rule
 
-$$ M_n = h * \sum_{i=0}^{n-1} f(a + (i + 0.5) h) $$
-
-$$ T_n = \frac{h}{2} * (f(a) + 2 \sum_{i=1}^{n-1} f(a + i*h) + f(b)) $$
-
-If we take the weighted average of these then the leading error term vanishes.
+Both the midpoint rule and the trapezium rule have the second order of convergence. If we take the right weighted average of them then the leading error term vanishes, thus giving us a better approximation.
 
 $$ S_n = \frac{2M_n+T_n}{3} $$
 
@@ -136,11 +136,15 @@ $$ S_{\infty} \approx S_{2n} + (S_{2n} - S_n) \sum_{k=1}^{\infty} 16^{-k} = S_{2
 | 64 | 3.528111015431030 | 3.528021666640219 |
 |----+-------------------+-------------------|
 
+All of the extrapolations to infinity of Simpson's rule listed above round to $3.528022$, so we can suggest with a high level of confidence that it is the integral to 6 decimal points.
+
 * Interpretation
 
 $$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528022 $$
 
-We can see that Simpson's rule estimates round to $3.528022$ for $n = 16, 32, 64$. Also the extrapolations to infinity for these values of $n$ round to it. Therefore, we can say with a high level of confidence that it is the integral to 6 decimal places.
+** Limitations
+
+These methods can give very good numerical approximations of the integral, but they cannot give you the exact value of the integral.
 
 \newpage
 * Use of technology
