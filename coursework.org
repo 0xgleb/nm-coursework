@@ -29,7 +29,7 @@ $$ f(x) = \frac{sin(x)}{ln(x)} + 1 $$
 
 $$ \int_{4}^{8} f(x) dx = \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx $$
 
-This integral cannot be solved analytically.
+This integral cannot be solved analytically. The integral represents the area under the curve between $x=4$ and $x=8$.
 
 #+CAPTION: Graph of $f(x)$.
 [[./function_graph.png]]
@@ -111,6 +111,10 @@ $$ S_n = \frac{2M_n+T_n}{3} $$
 | 64 | 3.528111015431030 | 3.527976992811555 | 3.528021667018047 | -0.000000005667415 |                       0.062585591613435 |
 |----+-------------------+-------------------+-------------------+--------------------+-----------------------------------------|
 
+Values of $S_n$ for $n \in \{8, 16, 32, 64\}$ round to $3.528022$.
+
+$$ \implies \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528022 $$
+
 * Error analysis
 
 $$ \frac{S_{4n} - S_{2n}}{S_{2n} - S_n} \approx \frac{1}{16} $$
@@ -136,18 +140,22 @@ $$ S_{\infty} \approx S_{2n} + (S_{2n} - S_n) \sum_{k=1}^{\infty} 16^{-k} = S_{2
 | 64 | 3.528111015431030 | 3.528021666640219 |
 |----+-------------------+-------------------|
 
-All of the extrapolations to infinity of Simpson's rule listed above round to $3.528022$, so we can suggest with a high level of confidence that it is the integral to 6 decimal points.
+All of the extrapolations to infinity of Simpson's rule listed above round to $3.528022667$, so we can suggest with a high level of confidence that it is the integral to 9 decimal points.
 
 * Interpretation
 
 $$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528022 $$
 
-** Limitations
+** Validity and limitations
 
-These methods can give very good numerical approximations of the integral, but they cannot give you the exact value of the integral.
+This is a very valid solution because Simpson's rule gives a very good approximation of the curve. These methods can give very good numerical approximations of the integral, but they cannot give you the exact value of the integral.
 
 \newpage
 * Use of technology
+
+** Code
+
+Here is the code that I wrote in Haskell for calculating the estimates.
 
 #+BEGIN_SRC haskell
 import qualified Data.ByteString.Lazy as BL (writeFile)
@@ -247,3 +255,11 @@ main = BL.writeFile file $ encode $ inf $ ratios $ diffs $ nToEstimate . (2^) <$
   where nToEstimate i = estimate func i range
         file = "results.csv"
 #+END_SRC
+
+** Desmos
+
+I used [[https://desmos.com]] for graphing the function $f(x)$ (the first graph).
+
+** Geogebra
+
+I used [[https://www.geogebra.org/m/pSftFfS8]] for making graphs for explaining how the midpoint and the trapezium rules work.
