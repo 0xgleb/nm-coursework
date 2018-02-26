@@ -36,9 +36,9 @@ This integral cannot be solved analytically. The integral represents the area un
 
 * Strategy
 
-On interval $[4,8]$ it is continuous and positive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules. Estimating definite integrals is estimating areas. Trapezium rule estimates the area by splitting it into trapezoids and calculating their areas. The midpoint rule does almost the same thing, but instead of calculating the average of lengths of bases to find the area it uses the integrand value at the middle point of a range.
+On interval $[4,8]$ it is continuous and positive, so we can use the Simpson's rule to estimate the integral. It can be derived from the midpoint and the trapezium rules.
 
-We know that definite integrals calculate the area under the curve. We can estimate that area using different methods.
+We know that definite integrals calculate the area under the curve. The midpoint, the trapezium, and Simpson's rules estimate that area.
 
 ** Trapezium rule
 
@@ -140,15 +140,15 @@ $$ S_{\infty} \approx S_{2n} + (S_{2n} - S_n) \sum_{k=1}^{\infty} 16^{-k} = S_{2
 | 64 | 3.528111015431030 | 3.528021666640219 |
 |----+-------------------+-------------------|
 
-All of the extrapolations to infinity of Simpson's rule listed above round to $3.528022667$, so we can suggest with a high level of confidence that it is the integral to 9 decimal points.
+The extrapolations to infinity, calculated using $S_{2n}$ and $S_n$ where $n \in \{8, 16, 32\}$, round to $3.528022667$. Hence we can suggest with a high level of confidence that this is the integral to 9 decimal places.
 
 * Interpretation
 
-$$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528022 $$
+$$ \int_{4}^{8} (\frac{sin(x)}{ln(x)} + 1) dx \approx 3.528022667 $$
 
 ** Validity and limitations
 
-This is a very valid solution because Simpson's rule gives a very good approximation of the curve. These methods can give very good numerical approximations of the integral, but they cannot give you the exact value of the integral.
+This is a very valid solution because Simpson's rule gives a very good approximation of the curve. Although these methods can give very good numerical approximations they cannot give you the exact value of the integral.
 
 \newpage
 * Use of technology
@@ -202,8 +202,7 @@ applyToNextRes getter f setter es@(e:_) =
     e : applyToNext (\res2 res1 -> setter res2 $ f (getter res2) (getter res1)) es
 
 {-| This function takes a list of estimates and returns the same estimates, but
-with the difference field updated for each estimate (except the first one)
--}
+with the difference field updated for each estimate (except the first one) -}
 diffs :: [Estimate] -> [Estimate]
 diffs = applyToNextRes simpsons (-) (\est d -> est { difference = Just d })
 
